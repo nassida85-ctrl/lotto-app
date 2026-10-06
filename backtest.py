@@ -1,7 +1,9 @@
-import json, math, urllib.request
+import json, math, urllib.request, os
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 
 DATA='https://smok95.github.io/lotto/results/all.json'
+DRAWS=None
 
 def u32(x): return x & 0xffffffff
 class Mulberry32:
@@ -35,14 +37,14 @@ def analyze(draws):
     return {'latest':latest,'score':score,'p10':percentile(sums,.1),'p90':percentile(sums,.9),'lastSet':set(draws[-1]['numbers'])}
 
 def weighted_pick(rng,score):
-    items=list(range(1,46)); out=[]
+    items=list(range(1,46)); weights=[.25+score[n] for n in items]; total=sum(weights); out=[]
     for _ in range(6):
-        ws=[.25+score[n] for n in items]; total=sum(ws); r=rng.random()*total; acc=0; idx=0
-        for i,w in enumerate(ws):
+        r=rng.random()*total; acc=0; idx=0
+        for i,w in enumerate(weights):
             acc+=w
             if acc>=r: idx=i; break
-        out.append(items.pop(idx))
-    return sorted(out)
+        out.append(items[idx]); total-=weights[idx]; items.pop(idx); weights.pop(idx)
+    return tuple(sorted(out))
 
 def combo_score(ns,info):
     odd=sum(n%2 for n in ns); low=sum(n<=22 for n in ns); sm=sum(ns); con=sum(ns[i]==ns[i-1]+1 for i in range(1,6)); dec=len(set((n-1)//10 for n in ns)); ov=sum(n in info['lastSet'] for n in ns)
@@ -58,34 +60,52 @@ def combo_score(ns,info):
 def recommend(draws,candidates=35000,sets=5):
     info=analyze(draws); rng=Mulberry32((info['latest']+1)*1000003+645); pool={}
     for _ in range(candidates):
-        ns=tuple(weighted_pick(rng,info['score']))
+        ns=weighted_pick(rng,info['score'])
         if ns not in pool: pool[ns]=combo_score(ns,info)
     ranked=sorted(pool.items(), key=lambda x:x[1], reverse=True); chosen=[]
+    chosen_sets=[]
     for ns,_ in ranked:
-        if all(len(set(ns)&set(c))<=3 for c in chosen): chosen.append(ns)
+        s=set(ns)
+        if all(len(s & cs)<=3 for cs in chosen_sets):
+            chosen.append(ns); chosen_sets.append(s)
         if len(chosen)>=sets: break
     return chosen
+
+def init_worker(draws):
+    global DRAWS; DRAWS=draws
+
+def test_one(i):
+    hist=DRAWS[:i]; actual=set(DRAWS[i]['numbers']); bonus=DRAWS[i].get('bonus_no')
+    picks=recommend(hist); hits=[len(set(p)&actual) for p in picks]; best=max(hits)
+    row={'draw':DRAWS[i]['draw_no'],'best':best}
+    if best>=4: row.update({'actual':sorted(actual),'picks':[list(p) for p in picks if len(set(p)&actual)==best]})
+    seconds=[]
+    for p in picks:
+        if len(set(p)&actual)==5 and bonus in p: seconds.append({'draw':DRAWS[i]['draw_no'],'actual':sorted(actual),'bonus':bonus,'pick':list(p)})
+    first=None
+    if best==6: first={'draw':DRAWS[i]['draw_no'],'actual':sorted(actual),'picks':[list(p) for p in picks]}
+    return row,first,seconds
 
 def main():
     req=urllib.request.Request(DATA,headers={'User-Agent':'Mozilla/5.0'})
     with urllib.request.urlopen(req,timeout=30) as r: draws=json.load(r)
     draws=sorted(draws,key=lambda d:d['draw_no'])
-    # 최소 50회 학습 후 51회부터 최신까지 완전 워크포워드
+    indices=list(range(50,len(draws)))
+    workers=max(2,min(4,os.cpu_count() or 2))
+    with ProcessPoolExecutor(max_workers=workers,initializer=init_worker,initargs=(draws,)) as ex:
+        rows=list(ex.map(test_one,indices,chunksize=8))
     dist=Counter(); first=[]; second=[]; best_rows=[]
-    for i in range(50,len(draws)):
-        hist=draws[:i]; actual=set(draws[i]['numbers']); bonus=draws[i].get('bonus_no')
-        picks=recommend(hist)
-        hits=[len(set(p)&actual) for p in picks]; best=max(hits); dist[best]+=1
-        if best==6: first.append({'draw':draws[i]['draw_no'],'actual':sorted(actual),'picks':[list(p) for p in picks]})
-        for p in picks:
-            if len(set(p)&actual)==5 and bonus in p: second.append({'draw':draws[i]['draw_no'],'actual':sorted(actual),'bonus':bonus,'pick':list(p)})
-        if best>=4: best_rows.append({'draw':draws[i]['draw_no'],'best_match':best,'actual':sorted(actual),'picks':[list(p) for p in picks if len(set(p)&actual)==best]})
+    for row,f,s2 in rows:
+        dist[row['best']]+=1
+        if row['best']>=4: best_rows.append(row)
+        if f: first.append(f)
+        second.extend(s2)
     result={
-      'data_latest_draw':draws[-1]['draw_no'], 'tested_draws':len(draws)-50, 'start_draw':draws[50]['draw_no'], 'end_draw':draws[-1]['draw_no'],
-      'games_per_draw':5,'total_games':(len(draws)-50)*5,'best_match_distribution':{str(k):dist[k] for k in range(7)},
+      'data_latest_draw':draws[-1]['draw_no'], 'tested_draws':len(indices), 'start_draw':draws[50]['draw_no'], 'end_draw':draws[-1]['draw_no'],
+      'games_per_draw':5,'total_games':len(indices)*5,'best_match_distribution':{str(k):dist[k] for k in range(7)},
       'first_prize_count':len(first),'first_prize_cases':first,'second_prize_count':len(second),'second_prize_cases':second,
       'cases_best_4plus':best_rows,
-      'method':'For each target draw, only earlier draws were used. Exact current recommendation algorithm, deterministic Mulberry32 seed, 35,000 candidates, 5 sets.'
+      'method':'Strict walk-forward: each target draw used only earlier draws. Exact recommendation logic, deterministic Mulberry32 seed, 35,000 candidates, 5 sets. Parallelized only across independent target draws.'
     }
     with open('backtest-result.json','w',encoding='utf-8') as f: json.dump(result,f,ensure_ascii=False,indent=2)
     print(json.dumps({k:result[k] for k in ['data_latest_draw','tested_draws','total_games','best_match_distribution','first_prize_count','second_prize_count']},ensure_ascii=False,indent=2))
