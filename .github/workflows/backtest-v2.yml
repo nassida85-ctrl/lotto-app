@@ -1,0 +1,26 @@
+name: Lotto Backtest V2
+on:
+  push:
+    paths:
+      - 'backtest_v2.py'
+      - '.github/workflows/backtest-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  backtest-v2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run V2 deep walk-forward backtest
+        run: python backtest_v2.py
+      - name: Commit V2 result
+        run: |
+          git config user.name "lotto-bot"
+          git config user.email "lotto-bot@users.noreply.github.com"
+          git add backtest-v2-result.json
+          git diff --cached --quiet || git commit -m "Update V2 backtest result"
+          git push
