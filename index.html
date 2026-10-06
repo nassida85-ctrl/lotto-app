@@ -1,15 +1,100 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#08131f"><title>로또 6/45 예상 시뮬레이션</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:radial-gradient(circle at top,#184b70 0%,#0a1c2c 46%,#050b12 100%);color:#f5fbff}.wrap{max-width:780px;margin:auto;padding:18px 14px 36px}.head{text-align:center;margin-bottom:14px}h1{margin:0;font-size:28px}.round{margin-top:8px;font-size:16px;font-weight:900;color:#d8efff}.date{margin-top:4px;font-size:13px;color:#a9c8db}.stage{background:linear-gradient(180deg,#17658f,#10445f 55%,#0b2b40);border:2px solid #ffffff22;border-radius:22px;padding:12px;box-shadow:0 14px 28px #0006}.panel{position:relative;overflow:hidden;border:2px solid #ffffff22;border-radius:18px;min-height:390px;background:linear-gradient(#ffffff14,#ffffff06)}canvas{display:block;width:100%;height:100%}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}button{width:100%;border:0;border-radius:14px;padding:15px 12px;font-size:16px;font-weight:900;color:#fff;background:linear-gradient(#34d2ff,#0d9fe2);box-shadow:0 7px 16px #0005;cursor:pointer}.unpopular{background:linear-gradient(#7558e8,#4a32b7)}.games{display:grid;gap:10px;margin-top:14px}.game{background:#ffffff12;border:1px solid #ffffff1f;border-radius:15px;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.glabel{min-width:54px;font-size:14px;font-weight:900;color:#d9efff}.nums{display:flex;gap:7px;flex-wrap:wrap}.ball{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;box-shadow:0 5px 11px #0004}.b1{background:#f7cb45;color:#111}.b2{background:#55b8ff;color:#111}.b3{background:#ff7070;color:#111}.b4{background:#566678;color:#fff}.b5{background:#69ca7e;color:#111}.mode{margin-top:10px;text-align:center;font-size:13px;font-weight:800;color:#d7ebf7}.note{text-align:center;color:#9ebdce;font-size:12px;margin-top:12px;line-height:1.55}@media(max-width:600px){h1{font-size:24px}.panel{min-height:320px}.ball{width:40px;height:40px;font-size:17px}.buttons{grid-template-columns:1fr}}
-</style></head><body><div class="wrap"><div class="head"><h1>로또 6/45 예상 시뮬레이션</h1><div class="round" id="roundText">제 ?회차 예상</div><div class="date" id="dateText">추첨일 계산 중</div></div><div class="stage"><div class="panel"><canvas id="machine" width="1000" height="600"></canvas></div><div class="buttons"><button id="drawBtn">통계 추천 5게임</button><button id="unpopularBtn" class="unpopular">비인기 5게임</button></div><div class="mode" id="modeText">공은 원통 안에서 계속 회전합니다.</div><div class="games" id="games"></div></div><div class="note">비인기 모드는 1등 확률을 높이는 기능이 아니라, 생일형 숫자·흔한 선호 패턴을 덜 쓰는 조합을 만들어 공동당첨 가능성을 줄이는 방향의 참고용 모드입니다.</div></div><script>
-const DATA_URL='https://smok95.github.io/lotto/results/all.json',canvas=document.getElementById('machine'),ctx=canvas.getContext('2d'),gamesEl=document.getElementById('games');let draws=[],targetRound='?',targetDate=null,balls=[];
-function colorFor(n){if(n<=10)return'#f7cb45';if(n<=20)return'#55b8ff';if(n<=30)return'#ff7070';if(n<=40)return'#566678';return'#69ca7e'}function textColor(n){return n>=31&&n<=40?'#fff':'#111'}function cls(n){if(n<=10)return'b1';if(n<=20)return'b2';if(n<=30)return'b3';if(n<=40)return'b4';return'b5'}function rand(a,b){return Math.random()*(b-a)+a}function parseDate(s){if(!s)return null;const d=new Date(s+'T00:00:00+09:00');return isNaN(d)?null:d}function fmtDate(d){return`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} 토`}function nextSaturday(from=new Date()){const d=new Date(from);d.setHours(0,0,0,0);let add=(6-d.getDay()+7)%7;if(add===0&&from.getHours()>=21)add=7;d.setDate(d.getDate()+add);return d}function calcTarget(latest){const now=new Date(),ld=parseDate(latest.date);let inc=1,td;if(ld){const days=Math.max(0,Math.floor((now-ld)/86400000));inc=Math.max(1,Math.floor(days/7)+1);td=new Date(ld);td.setDate(td.getDate()+7*inc)}else td=nextSaturday(now);targetRound=latest.no+inc;targetDate=td;roundText.textContent=`제 ${targetRound}회차 예상`;dateText.textContent=`${fmtDate(td)} 추첨 예정`}
-async function loadData(){try{const r=await fetch(DATA_URL,{cache:'no-store'}),j=await r.json();draws=j.map(d=>({no:+d.draw_no,n:d.numbers.map(Number).sort((a,b)=>a-b),date:d.date||d.drwNoDate||''})).sort((a,b)=>a.no-b.no);localStorage.lottoQuick=JSON.stringify(draws);calcTarget(draws.at(-1))}catch(e){const x=localStorage.lottoQuick;if(x){draws=JSON.parse(x);calcTarget(draws.at(-1))}else{targetDate=nextSaturday();dateText.textContent=`${fmtDate(targetDate)} 추첨 예정`;roundText.textContent='이번 주 예상'}}}
-function normalize(o){const v=Object.values(o),lo=Math.min(...v),hi=Math.max(...v),r={};for(const k in o)r[k]=hi===lo?.5:(o[k]-lo)/(hi-lo);return r}function analyze(){if(!draws.length)return null;const latest=draws.at(-1).no,all={},r20={},r50={},r100={},last={};for(let n=1;n<=45;n++){all[n]=0;r20[n]=0;r50[n]=0;r100[n]=0;last[n]=0}draws.forEach(d=>d.n.forEach(n=>{all[n]++;last[n]=d.no}));draws.slice(-20).forEach(d=>d.n.forEach(n=>r20[n]++));draws.slice(-50).forEach(d=>d.n.forEach(n=>r50[n]++));draws.slice(-100).forEach(d=>d.n.forEach(n=>r100[n]++));const gap={};for(let n=1;n<=45;n++)gap[n]=latest-last[n];const A=normalize(all),B=normalize(r20),C=normalize(r50),D=normalize(r100),G=normalize(gap),score={};for(let n=1;n<=45;n++)score[n]=.12*A[n]+.18*B[n]+.25*C[n]+.20*D[n]+.25*G[n];return score}
-function statisticalGame(){const score=analyze();if(!score)return randomGame();let items=Array.from({length:45},(_,i)=>i+1),out=[];for(let k=0;k<6;k++){const w=items.map(n=>.35+score[n]),tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot,acc=0,idx=0;for(let i=0;i<items.length;i++){acc+=w[i];if(acc>=r){idx=i;break}}out.push(items.splice(idx,1)[0])}return out.sort((a,b)=>a-b)}
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08131f">
+<title>로또 6/45 예상 시뮬레이션</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:radial-gradient(circle at top,#184b70 0%,#0a1c2c 46%,#050b12 100%);color:#f5fbff}.wrap{max-width:780px;margin:auto;padding:18px 14px 36px}.head{text-align:center;margin-bottom:14px}h1{margin:0;font-size:28px}.round{margin-top:8px;font-size:16px;font-weight:900;color:#d8efff}.date{margin-top:4px;font-size:13px;color:#a9c8db}.stage{background:linear-gradient(180deg,#17658f,#10445f 55%,#0b2b40);border:2px solid #ffffff22;border-radius:22px;padding:12px;box-shadow:0 14px 28px #0006}.panel{position:relative;overflow:hidden;border:2px solid #ffffff22;border-radius:18px;min-height:390px;background:linear-gradient(#ffffff14,#ffffff06)}canvas{display:block;width:100%;height:100%}.buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}button{width:100%;border:0;border-radius:14px;padding:15px 10px;font-size:15px;font-weight:900;color:#fff;box-shadow:0 7px 16px #0005;cursor:pointer}.weekly{background:linear-gradient(#19c68a,#0c8f68)}.stat{background:linear-gradient(#34d2ff,#0d9fe2)}.unpopular{background:linear-gradient(#7558e8,#4a32b7)}.games{display:grid;gap:10px;margin-top:14px}.game{background:#ffffff12;border:1px solid #ffffff1f;border-radius:15px;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.glabel{min-width:54px;font-size:14px;font-weight:900;color:#d9efff}.nums{display:flex;gap:7px;flex-wrap:wrap}.ball{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;box-shadow:0 5px 11px #0004}.b1{background:#f7cb45;color:#111}.b2{background:#55b8ff;color:#111}.b3{background:#ff7070;color:#111}.b4{background:#566678;color:#fff}.b5{background:#69ca7e;color:#111}.mode{margin-top:10px;text-align:center;font-size:13px;font-weight:800;color:#d7ebf7}.note{text-align:center;color:#9ebdce;font-size:12px;margin-top:12px;line-height:1.55}@media(max-width:650px){h1{font-size:24px}.panel{min-height:320px}.ball{width:40px;height:40px;font-size:17px}.buttons{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>로또 6/45 예상 시뮬레이션</h1>
+    <div class="round" id="roundText">제 ?회차 예상</div>
+    <div class="date" id="dateText">추첨일 계산 중</div>
+  </div>
+
+  <div class="stage">
+    <div class="panel"><canvas id="machine" width="1000" height="600"></canvas></div>
+    <div class="buttons">
+      <button id="weeklyBtn" class="weekly">이번주 추천 5게임</button>
+      <button id="statBtn" class="stat">통계추천 5게임</button>
+      <button id="unpopularBtn" class="unpopular">비인기추천 5게임</button>
+    </div>
+    <div class="mode" id="modeText">공은 원통 안에서 계속 회전합니다.</div>
+    <div class="games" id="games"></div>
+  </div>
+
+  <div class="note">이번주 추천은 최근 흐름과 조합 균형을 함께 반영하고, 통계추천은 과거 출현 빈도와 미출현 점수를 중심으로 계산합니다. 비인기추천은 공동당첨 회피 성향의 참고용입니다.</div>
+</div>
+
+<script>
+const DATA_URL='https://smok95.github.io/lotto/results/all.json';
+const canvas=document.getElementById('machine'),ctx=canvas.getContext('2d'),gamesEl=document.getElementById('games');
+let draws=[],targetRound='?',targetDate=null,balls=[];
+
+function colorFor(n){if(n<=10)return'#f7cb45';if(n<=20)return'#55b8ff';if(n<=30)return'#ff7070';if(n<=40)return'#566678';return'#69ca7e'}
+function textColor(n){return n>=31&&n<=40?'#fff':'#111'}
+function cls(n){if(n<=10)return'b1';if(n<=20)return'b2';if(n<=30)return'b3';if(n<=40)return'b4';return'b5'}
+function rand(a,b){return Math.random()*(b-a)+a}
+function parseDate(s){if(!s)return null;const d=new Date(s+'T00:00:00+09:00');return isNaN(d)?null:d}
+function fmtDate(d){return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} 토`}
+function nextSaturday(from=new Date()){const d=new Date(from);d.setHours(0,0,0,0);let add=(6-d.getDay()+7)%7;if(add===0&&from.getHours()>=21)add=7;d.setDate(d.getDate()+add);return d}
+function calcTarget(latest){const now=new Date(),ld=parseDate(latest.date);let inc=1,td;if(ld){const days=Math.max(0,Math.floor((now-ld)/86400000));inc=Math.max(1,Math.floor(days/7)+1);td=new Date(ld);td.setDate(td.getDate()+7*inc)}else td=nextSaturday(now);targetRound=latest.no+inc;targetDate=td;roundText.textContent=`제 ${targetRound}회차 예상`;dateText.textContent=`${fmtDate(td)} 추첨 예정`}
+
+async function loadData(){
+  try{const r=await fetch(DATA_URL,{cache:'no-store'}),j=await r.json();draws=j.map(d=>({no:+d.draw_no,n:d.numbers.map(Number).sort((a,b)=>a-b),date:d.date||d.drwNoDate||''})).sort((a,b)=>a.no-b.no);localStorage.lottoQuick=JSON.stringify(draws);calcTarget(draws.at(-1))}
+  catch(e){const x=localStorage.lottoQuick;if(x){draws=JSON.parse(x);calcTarget(draws.at(-1))}else{targetDate=nextSaturday();dateText.textContent=`${fmtDate(targetDate)} 추첨 예정`;roundText.textContent='이번 주 예상'}}
+}
+
+function normalize(o){const v=Object.values(o),lo=Math.min(...v),hi=Math.max(...v),r={};for(const k in o)r[k]=(hi===lo?0.5:(o[k]-lo)/(hi-lo));return r}
+function analyze(){
+  if(!draws.length)return null;
+  const latest=draws.at(-1).no,all={},r10={},r20={},r50={},r100={},last={};
+  for(let n=1;n<=45;n++){all[n]=0;r10[n]=0;r20[n]=0;r50[n]=0;r100[n]=0;last[n]=0}
+  draws.forEach(d=>d.n.forEach(n=>{all[n]++;last[n]=d.no}));
+  draws.slice(-10).forEach(d=>d.n.forEach(n=>r10[n]++));
+  draws.slice(-20).forEach(d=>d.n.forEach(n=>r20[n]++));
+  draws.slice(-50).forEach(d=>d.n.forEach(n=>r50[n]++));
+  draws.slice(-100).forEach(d=>d.n.forEach(n=>r100[n]++));
+  const gap={};for(let n=1;n<=45;n++)gap[n]=latest-last[n];
+  const A=normalize(all),R10=normalize(r10),R20=normalize(r20),R50=normalize(r50),R100=normalize(r100),G=normalize(gap),stat={},weekly={};
+  for(let n=1;n<=45;n++){
+    stat[n]=.12*A[n]+.18*R20[n]+.25*R50[n]+.20*R100[n]+.25*G[n];
+    weekly[n]=.08*A[n]+.27*R10[n]+.25*R20[n]+.18*R50[n]+.22*G[n];
+  }
+  return {stat,weekly,lastSet:new Set(draws.at(-1).n)};
+}
+
 function randomGame(){let a=Array.from({length:45},(_,i)=>i+1);for(let i=44;i;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,6).sort((a,b)=>a-b)}
-const commonFav=new Set([1,3,7,8,9,10,11,12,13,14,17,21,23,25,27,28,30,31]);function unpopularPenalty(g){let p=0;const under31=g.filter(n=>n<=31).length,over31=6-under31;p+=Math.max(0,under31-3)*5;p-=Math.min(over31,3)*2;for(const n of g)if(commonFav.has(n))p+=1.2;let consecutive=0;for(let i=1;i<6;i++)if(g[i]===g[i-1]+1)consecutive++;p+=consecutive*4;const sameEnd={};for(const n of g){const e=n%10;sameEnd[e]=(sameEnd[e]||0)+1}p+=Object.values(sameEnd).reduce((s,c)=>s+(c>=3?(c-2)*3:0),0);const decades=new Set(g.map(n=>Math.floor((n-1)/10))).size;if(decades<4)p+=4;const odd=g.filter(n=>n%2).length;if(odd===0||odd===6)p+=5;const sum=g.reduce((a,b)=>a+b,0);if(sum<115||sum>190)p+=2;return p+Math.random()*1.8}function unpopularGame(){let best=null,bp=1e9;for(let i=0;i<2500;i++){const g=randomGame(),p=unpopularPenalty(g);if(p<bp){bp=p;best=g}}return best}
-function renderGames(type){const sets=[],seen=new Set(),maker=type==='unpopular'?unpopularGame:statisticalGame;while(sets.length<5){const g=maker(),k=g.join(',');if(!seen.has(k)){seen.add(k);sets.push(g)}}gamesEl.innerHTML=sets.map((g,i)=>`<div class="game"><div class="glabel">${i+1}게임</div><div class="nums">${g.map(n=>`<span class="ball ${cls(n)}">${n}</span>`).join('')}</div></div>`).join('');modeText.textContent=type==='unpopular'?'비인기 조합 5게임 · 공동당첨 회피 성향':'통계 추천 5게임 · 과거 데이터 가중'}
-function makeBalls(){balls=[];for(let n=1;n<=45;n++)balls.push({n,a:rand(0,Math.PI*2),o:rand(18,185),v:rand(.008,.022),p:rand(0,Math.PI*2)})}function drawBall(x,y,n,z){ctx.save();ctx.shadowColor='rgba(0,0,0,.32)';ctx.shadowBlur=7;ctx.fillStyle=colorFor(n);ctx.beginPath();ctx.arc(x,y,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=textColor(n);ctx.font=`900 ${Math.round(z*.88)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n,x,y+1);ctx.restore()}function frame(){const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2+4,rx=330,ry=220;ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'rgba(255,255,255,.13)');bg.addColorStop(1,'rgba(255,255,255,.04)');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();for(const b of balls){b.a+=b.v;const x=cx+Math.cos(b.a)*b.o,y=cy+Math.sin(b.a*1.15+b.p)*(b.o*.58)+Math.sin(b.a*2.6)*7;drawBall(x,y,b.n,18)}ctx.restore();ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.035)';ctx.beginPath();ctx.ellipse(cx,cy,rx-4,ry-4,0,0,Math.PI*2);ctx.fill();requestAnimationFrame(frame)}
-drawBtn.onclick=()=>renderGames('stat');unpopularBtn.onclick=()=>renderGames('unpopular');makeBalls();loadData();requestAnimationFrame(frame);
-</script></body></html>
+function weightedGame(score){let items=Array.from({length:45},(_,i)=>i+1),out=[];for(let k=0;k<6;k++){const w=items.map(n=>.30+score[n]),tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot,acc=0,idx=0;for(let i=0;i<items.length;i++){acc+=w[i];if(acc>=r){idx=i;break}}out.push(items.splice(idx,1)[0])}return out.sort((a,b)=>a-b)}
+function statisticalGame(){const a=analyze();return a?weightedGame(a.stat):randomGame()}
+
+function weeklyScore(g,a){let s=g.reduce((sum,n)=>sum+a.weekly[n],0);const odd=g.filter(n=>n%2).length,low=g.filter(n=>n<=22).length,sum=g.reduce((x,y)=>x+y,0),dec=new Set(g.map(n=>Math.floor((n-1)/10))).size,overlap=g.filter(n=>a.lastSet.has(n)).length;let con=0;for(let i=1;i<6;i++)if(g[i]===g[i-1]+1)con++;if(odd>=2&&odd<=4)s+=1.1;else s-=1;if(low>=2&&low<=4)s+=.8;else s-=.8;if(sum>=115&&sum<=190)s+=.8;else s-=1;if(dec>=4)s+=.7;else s-=.6;if(con<=1)s+=.4;else s-=con*.8;if(overlap<=2)s+=.4;else s-=overlap*.6;return s}
+function weeklyGame(){const a=analyze();if(!a)return randomGame();let best=null,bestScore=-1e9;for(let i=0;i<1800;i++){const g=weightedGame(a.weekly),s=weeklyScore(g,a)+Math.random()*.35;if(s>bestScore){bestScore=s;best=g}}return best}
+
+const commonFav=new Set([1,3,7,8,9,10,11,12,13,14,17,21,23,25,27,28,30,31]);
+function unpopularPenalty(g){let p=0;const under31=g.filter(n=>n<=31).length,over31=6-under31;p+=Math.max(0,under31-3)*5;p-=Math.min(over31,3)*2;for(const n of g)if(commonFav.has(n))p+=1.2;let consecutive=0;for(let i=1;i<6;i++)if(g[i]===g[i-1]+1)consecutive++;p+=consecutive*4;const sameEnd={};for(const n of g){const e=n%10;sameEnd[e]=(sameEnd[e]||0)+1}p+=Object.values(sameEnd).reduce((s,c)=>s+(c>=3?(c-2)*3:0),0);const decades=new Set(g.map(n=>Math.floor((n-1)/10))).size;if(decades<4)p+=4;const odd=g.filter(n=>n%2).length;if(odd===0||odd===6)p+=5;const sum=g.reduce((a,b)=>a+b,0);if(sum<115||sum>190)p+=2;return p+Math.random()*1.8}
+function unpopularGame(){let best=null,bp=1e9;for(let i=0;i<2500;i++){const g=randomGame(),p=unpopularPenalty(g);if(p<bp){bp=p;best=g}}return best}
+
+function renderGames(type){
+  const maker=type==='weekly'?weeklyGame:type==='stat'?statisticalGame:unpopularGame;
+  const sets=[],seen=new Set();
+  while(sets.length<5){const g=maker(),k=g.join(',');if(!seen.has(k)){seen.add(k);sets.push(g)}}
+  gamesEl.innerHTML=sets.map((g,i)=>`<div class="game"><div class="glabel">${i+1}게임</div><div class="nums">${g.map(n=>`<span class="ball ${cls(n)}">${n}</span>`).join('')}</div></div>`).join('');
+  modeText.textContent=type==='weekly'?'이번주 추천 5게임 · 최근 흐름 + 조합 균형':type==='stat'?'통계추천 5게임 · 과거 데이터 가중':'비인기추천 5게임 · 공동당첨 회피 성향';
+}
+
+function makeBalls(){balls=[];for(let n=1;n<=45;n++)balls.push({n,a:rand(0,Math.PI*2),o:rand(18,185),v:rand(.008,.022),p:rand(0,Math.PI*2)})}
+function drawBall(x,y,n,z){ctx.save();ctx.shadowColor='rgba(0,0,0,.32)';ctx.shadowBlur=7;ctx.fillStyle=colorFor(n);ctx.beginPath();ctx.arc(x,y,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=textColor(n);ctx.font=`900 ${Math.round(z*.88)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n,x,y+1);ctx.restore()}
+function frame(){const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2+4,rx=330,ry=220;ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'rgba(255,255,255,.13)');bg.addColorStop(1,'rgba(255,255,255,.04)');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.clip();for(const b of balls){b.a+=b.v;const x=cx+Math.cos(b.a)*b.o,y=cy+Math.sin(b.a*1.15+b.p)*(b.o*.58)+Math.sin(b.a*2.6)*7;drawBall(x,y,b.n,18)}ctx.restore();ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.035)';ctx.beginPath();ctx.ellipse(cx,cy,rx-4,ry-4,0,0,Math.PI*2);ctx.fill();requestAnimationFrame(frame)}
+
+document.getElementById('weeklyBtn').onclick=()=>renderGames('weekly');
+document.getElementById('statBtn').onclick=()=>renderGames('stat');
+document.getElementById('unpopularBtn').onclick=()=>renderGames('unpopular');
+makeBalls();loadData();requestAnimationFrame(frame);
+</script>
+</body></html>
