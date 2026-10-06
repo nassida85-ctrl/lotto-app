@@ -1,0 +1,244 @@
+{
+  "data_latest_draw": 1244,
+  "tested_draws": 1194,
+  "start_draw": 51,
+  "end_draw": 1244,
+  "games_per_draw": 5,
+  "total_games": 5970,
+  "best_match_distribution": {
+    "0": 95,
+    "1": 549,
+    "2": 446,
+    "3": 94,
+    "4": 10,
+    "5": 0,
+    "6": 0
+  },
+  "first_prize_count": 0,
+  "first_prize_cases": [],
+  "second_prize_count": 0,
+  "second_prize_cases": [],
+  "cases_best_4plus": [
+    {
+      "draw": 76,
+      "best": 4,
+      "actual": [
+        1,
+        3,
+        15,
+        22,
+        25,
+        37
+      ],
+      "picks": [
+        [
+          3,
+          15,
+          25,
+          36,
+          37,
+          40
+        ]
+      ]
+    },
+    {
+      "draw": 221,
+      "best": 4,
+      "actual": [
+        2,
+        20,
+        33,
+        35,
+        37,
+        40
+      ],
+      "picks": [
+        [
+          2,
+          3,
+          20,
+          33,
+          37,
+          45
+        ]
+      ]
+    },
+    {
+      "draw": 568,
+      "best": 4,
+      "actual": [
+        1,
+        3,
+        17,
+        20,
+        31,
+        44
+      ],
+      "picks": [
+        [
+          1,
+          17,
+          20,
+          26,
+          31,
+          32
+        ]
+      ]
+    },
+    {
+      "draw": 811,
+      "best": 4,
+      "actual": [
+        8,
+        11,
+        19,
+        21,
+        36,
+        45
+      ],
+      "picks": [
+        [
+          10,
+          12,
+          19,
+          21,
+          36,
+          45
+        ]
+      ]
+    },
+    {
+      "draw": 825,
+      "best": 4,
+      "actual": [
+        8,
+        15,
+        21,
+        31,
+        33,
+        38
+      ],
+      "picks": [
+        [
+          12,
+          15,
+          21,
+          31,
+          38,
+          43
+        ]
+      ]
+    },
+    {
+      "draw": 912,
+      "best": 4,
+      "actual": [
+        5,
+        8,
+        18,
+        21,
+        22,
+        38
+      ],
+      "picks": [
+        [
+          5,
+          18,
+          19,
+          21,
+          26,
+          38
+        ]
+      ]
+    },
+    {
+      "draw": 1005,
+      "best": 4,
+      "actual": [
+        8,
+        13,
+        18,
+        24,
+        27,
+        29
+      ],
+      "picks": [
+        [
+          2,
+          13,
+          18,
+          24,
+          29,
+          42
+        ]
+      ]
+    },
+    {
+      "draw": 1107,
+      "best": 4,
+      "actual": [
+        6,
+        14,
+        30,
+        31,
+        40,
+        41
+      ],
+      "picks": [
+        [
+          6,
+          14,
+          30,
+          37,
+          40,
+          43
+        ]
+      ]
+    },
+    {
+      "draw": 1135,
+      "best": 4,
+      "actual": [
+        1,
+        6,
+        13,
+        19,
+        21,
+        33
+      ],
+      "picks": [
+        [
+          6,
+          13,
+          16,
+          19,
+          30,
+          33
+        ]
+      ]
+    },
+    {
+      "draw": 1170,
+      "best": 4,
+      "actual": [
+        3,
+        13,
+        28,
+        34,
+        38,
+        42
+      ],
+      "picks": [
+        [
+          3,
+          13,
+          27,
+          30,
+          34,
+          38
+        ]
+      ]
+    }
+  ],
+  "method": "Strict walk-forward: each target draw used only earlier draws. Exact recommendation logic, deterministic Mulberry32 seed, 35,000 candidates, 5 sets. Parallelized only across independent target draws."
+}
