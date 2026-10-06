@@ -1,0 +1,427 @@
+{
+  "version": "V2-deep",
+  "tested_draws": 1144,
+  "start_draw": 101,
+  "end_draw": 1244,
+  "candidates_per_draw": 80000,
+  "top_games_per_draw": 20,
+  "candidate_pool_exact_count": 6,
+  "top20_first_prize_count": 0,
+  "best_match_distribution": {
+    "0": 18,
+    "1": 344,
+    "2": 568,
+    "3": 196,
+    "4": 18,
+    "5": 0,
+    "6": 0
+  },
+  "first_prize_cases": [],
+  "pool_exact_draws": [
+    294,
+    332,
+    358,
+    715,
+    1040,
+    1240
+  ],
+  "four_plus_cases": [
+    {
+      "draw": 161,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        22,
+        34,
+        36,
+        40,
+        42,
+        45
+      ],
+      "pick": [
+        2,
+        13,
+        34,
+        36,
+        42,
+        45
+      ]
+    },
+    {
+      "draw": 221,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        2,
+        20,
+        33,
+        35,
+        37,
+        40
+      ],
+      "pick": [
+        2,
+        3,
+        20,
+        25,
+        35,
+        37
+      ]
+    },
+    {
+      "draw": 332,
+      "best": 4,
+      "exact": false,
+      "pool_exact": true,
+      "actual": [
+        16,
+        17,
+        34,
+        36,
+        42,
+        45
+      ],
+      "pick": [
+        10,
+        17,
+        19,
+        34,
+        36,
+        45
+      ]
+    },
+    {
+      "draw": 356,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        2,
+        8,
+        14,
+        25,
+        29,
+        45
+      ],
+      "pick": [
+        5,
+        14,
+        25,
+        29,
+        34,
+        45
+      ]
+    },
+    {
+      "draw": 424,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        10,
+        11,
+        26,
+        31,
+        34,
+        44
+      ],
+      "pick": [
+        11,
+        15,
+        22,
+        26,
+        34,
+        44
+      ]
+    },
+    {
+      "draw": 492,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        22,
+        27,
+        31,
+        35,
+        37,
+        40
+      ],
+      "pick": [
+        8,
+        13,
+        22,
+        27,
+        31,
+        40
+      ]
+    },
+    {
+      "draw": 499,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        5,
+        20,
+        23,
+        27,
+        35,
+        40
+      ],
+      "pick": [
+        8,
+        13,
+        20,
+        23,
+        27,
+        40
+      ]
+    },
+    {
+      "draw": 520,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        4,
+        22,
+        27,
+        28,
+        38,
+        40
+      ],
+      "pick": [
+        4,
+        20,
+        22,
+        23,
+        27,
+        40
+      ]
+    },
+    {
+      "draw": 530,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        16,
+        23,
+        27,
+        29,
+        33,
+        41
+      ],
+      "pick": [
+        4,
+        23,
+        27,
+        29,
+        40,
+        41
+      ]
+    },
+    {
+      "draw": 789,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        2,
+        6,
+        7,
+        12,
+        19,
+        45
+      ],
+      "pick": [
+        6,
+        12,
+        15,
+        19,
+        24,
+        45
+      ]
+    },
+    {
+      "draw": 858,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        9,
+        13,
+        32,
+        38,
+        39,
+        43
+      ],
+      "pick": [
+        13,
+        16,
+        30,
+        38,
+        39,
+        43
+      ]
+    },
+    {
+      "draw": 862,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        10,
+        34,
+        38,
+        40,
+        42,
+        43
+      ],
+      "pick": [
+        10,
+        13,
+        34,
+        38,
+        39,
+        43
+      ]
+    },
+    {
+      "draw": 1005,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        8,
+        13,
+        18,
+        24,
+        27,
+        29
+      ],
+      "pick": [
+        2,
+        13,
+        18,
+        24,
+        29,
+        42
+      ]
+    },
+    {
+      "draw": 1050,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        6,
+        12,
+        31,
+        35,
+        38,
+        43
+      ],
+      "pick": [
+        6,
+        12,
+        26,
+        31,
+        35,
+        36
+      ]
+    },
+    {
+      "draw": 1107,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        6,
+        14,
+        30,
+        31,
+        40,
+        41
+      ],
+      "pick": [
+        6,
+        14,
+        22,
+        31,
+        40,
+        43
+      ]
+    },
+    {
+      "draw": 1135,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        1,
+        6,
+        13,
+        19,
+        21,
+        33
+      ],
+      "pick": [
+        6,
+        13,
+        19,
+        28,
+        33,
+        34
+      ]
+    },
+    {
+      "draw": 1170,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        3,
+        13,
+        28,
+        34,
+        38,
+        42
+      ],
+      "pick": [
+        7,
+        13,
+        27,
+        28,
+        34,
+        38
+      ]
+    },
+    {
+      "draw": 1244,
+      "best": 4,
+      "exact": false,
+      "pool_exact": false,
+      "actual": [
+        1,
+        13,
+        18,
+        26,
+        34,
+        38
+      ],
+      "pick": [
+        3,
+        13,
+        18,
+        27,
+        34,
+        38
+      ]
+    }
+  ],
+  "method": "Strict walk-forward. Target draw excluded. Rich recent-window, gap, pair and pattern scoring. 80k weighted candidates; top 20 diversified."
+}
